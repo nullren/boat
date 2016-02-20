@@ -3,49 +3,131 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
-	"strings"
+	"time"
 )
 
-type Episode struct {
-	Title        string
-	Release_date string
-	Season       int
-	Number       int
-	Show         *interface{}
+//https://mholt.github.io/json-to-go/
+type LookupShow struct {
+	ID        int      `json:"id"`
+	URL       string   `json:"url"`
+	Name      string   `json:"name"`
+	Type      string   `json:"type"`
+	Language  string   `json:"language"`
+	Genres    []string `json:"genres"`
+	Status    string   `json:"status"`
+	Runtime   int      `json:"runtime"`
+	Premiered string   `json:"premiered"`
+	Schedule  struct {
+		Time string   `json:"time"`
+		Days []string `json:"days"`
+	} `json:"schedule"`
+	Rating struct {
+		Average float64 `json:"average"`
+	} `json:"rating"`
+	Weight  int `json:"weight"`
+	Network struct {
+		ID      int    `json:"id"`
+		Name    string `json:"name"`
+		Country struct {
+			Name     string `json:"name"`
+			Code     string `json:"code"`
+			Timezone string `json:"timezone"`
+		} `json:"country"`
+	} `json:"network"`
+	WebChannel interface{} `json:"webChannel"`
+	Externals  struct {
+		Tvrage  int    `json:"tvrage"`
+		Thetvdb int    `json:"thetvdb"`
+		Imdb    string `json:"imdb"`
+	} `json:"externals"`
+	Image struct {
+		Medium   string `json:"medium"`
+		Original string `json:"original"`
+	} `json:"image"`
+	Summary string `json:"summary"`
+	Updated int    `json:"updated"`
+	Links   struct {
+		Self struct {
+			Href string `json:"href"`
+		} `json:"self"`
+		Previousepisode struct {
+			Href string `json:"href"`
+		} `json:"previousepisode"`
+		Nextepisode struct {
+			Href string `json:"href"`
+		} `json:"nextepisode"`
+	} `json:"_links"`
 }
 
-type EpGuideResponse struct {
-	Episode *Episode
+type EpisodeInfo struct {
+	ID       int         `json:"id"`
+	URL      string      `json:"url"`
+	Name     string      `json:"name"`
+	Season   int         `json:"season"`
+	Number   int         `json:"number"`
+	Airdate  string      `json:"airdate"`
+	Airtime  string      `json:"airtime"`
+	Airstamp string      `json:"airstamp"`
+	Runtime  int         `json:"runtime"`
+	Image    interface{} `json:"image"`
+	Summary  string      `json:"summary"`
+	Links    struct {
+		Self struct {
+			Href string `json:"href"`
+		} `json:"self"`
+	} `json:"_links"`
 }
 
 func nextEpisode(series string) (string, error) {
-	return epguide("next", series)
+	return episodeInfo(series, func(s LookupShow) string { return s.Links.Nextepisode.Href })
 }
 
 func lastEpisode(series string) (string, error) {
-	return epguide("last", series)
+	return episodeInfo(series, func(s LookupShow) string { return s.Links.Previousepisode.Href })
 }
 
-func epguide(cmd, series string) (string, error) {
-	url := fmt.Sprintf("%s/%s/", epguideUrl(series), cmd)
-
-	var f EpGuideResponse
-	err := getJson(url, &f)
-	if err != nil {
-		return "", err
+func episodeInfo(series string, selector func(LookupShow) string) (string, error) {
+	show, e1 := lookupShow(series)
+	if e1 != nil {
+		return "", fmt.Errorf("No result for user input \"%s\" (%v)", series, e1)
 	}
 
-	return fmt.Sprintf("s%02de%02d: %s", f.Episode.Season, f.Episode.Number, f.Episode.Release_date), nil
+	episode, e2 := lookupEpisode(selector(show))
+	if e2 != nil {
+		return "", fmt.Errorf("No result for \"%s\" (%v)", show.Name, e2)
+	}
+
+	return fmt.Sprintf("\"%s\" on %s", show.Name, parseTime(episode.Airstamp)), nil
 }
 
-func stripWs(something string) string {
-	return strings.Join(strings.Fields(something), "")
+func parseTime(airstamp string) string {
+	l, e1 := time.LoadLocation("America/New_York")
+	if e1 != nil {
+		return airstamp
+	}
+	t, e2 := time.Parse(time.RFC3339, airstamp)
+	if e2 != nil {
+		return airstamp
+	}
+	return t.In(l).Format(time.UnixDate)
 }
 
-func epguideUrl(series string) string {
-	return "https://epguides.frecar.no/show/" + stripWs(series)
+func lookupShow(series string) (LookupShow, error) {
+	url := fmt.Sprintf("http://api.tvmaze.com/singlesearch/shows?q=%s", series)
+	var f LookupShow
+	if err := getJson(url, &f); err != nil {
+		return f, err
+	}
+	return f, nil
+}
+
+func lookupEpisode(url string) (EpisodeInfo, error) {
+	var e EpisodeInfo
+	if err := getJson(url, &e); err != nil {
+		return e, err
+	}
+	return e, nil
 }
 
 func getJson(url string, target interface{}) error {
@@ -55,10 +137,4 @@ func getJson(url string, target interface{}) error {
 	}
 	defer r.Body.Close()
 	return json.NewDecoder(r.Body).Decode(target)
-}
-
-func failif(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
 }

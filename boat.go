@@ -69,7 +69,7 @@ func runIrc(server, nick, owner string, notUseTls bool, channels []string) {
 			if err == nil {
 				io.Privmsgf(target, "%s", res)
 			} else {
-				io.Privmsgf(target, "had an error...")
+				io.Privmsgf(target, "Uh oh. %v", err)
 			}
 		}
 	})
@@ -86,7 +86,7 @@ func runIrc(server, nick, owner string, notUseTls bool, channels []string) {
 			if err == nil {
 				io.Privmsgf(target, "%s", res)
 			} else {
-				io.Privmsgf(target, "had an error...")
+				io.Privmsgf(target, "Uh-oh. %v", err)
 			}
 		}
 	})
