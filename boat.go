@@ -3,9 +3,10 @@ package main
 import (
 	"crypto/tls"
 	"flag"
-	"github.com/thoj/go-ircevent"
 	"log"
 	"strings"
+
+	"github.com/thoj/go-ircevent"
 )
 
 func main() {
@@ -53,6 +54,40 @@ func runIrc(server, nick, owner string, notUseTls bool, channels []string) {
 
 		if m := event.Message(); m == "o/" {
 			io.Privmsgf(target, "%v: \\o", event.Nick)
+		}
+	})
+
+	// next episode
+	io.AddCallback("PRIVMSG", func(event *irc.Event) {
+		target := event.Arguments[0]
+		if target == nick {
+			target = event.Nick
+		}
+		cmd := ",next "
+		if m := event.Message(); strings.HasPrefix(m, cmd) {
+			res, err := nextEpisode(m[len(cmd):])
+			if err == nil {
+				io.Privmsgf(target, "%s", res)
+			} else {
+				io.Privmsgf(target, "had an error...")
+			}
+		}
+	})
+
+	// last episode
+	io.AddCallback("PRIVMSG", func(event *irc.Event) {
+		target := event.Arguments[0]
+		if target == nick {
+			target = event.Nick
+		}
+		cmd := ",last "
+		if m := event.Message(); strings.HasPrefix(m, cmd) {
+			res, err := lastEpisode(m[len(cmd):])
+			if err == nil {
+				io.Privmsgf(target, "%s", res)
+			} else {
+				io.Privmsgf(target, "had an error...")
+			}
 		}
 	})
 
