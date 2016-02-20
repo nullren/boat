@@ -5,25 +5,23 @@ import (
 	"flag"
 	"github.com/thoj/go-ircevent"
 	"log"
+	"strings"
 )
 
 func main() {
-	// load config options
-	server := flag.String("server", "chat.freenode.net:6697", "Server to connect to")
-	nick := flag.String("nick", "boat", "Nickname to use")
-	user := flag.String("user", "boat", "Username to use")
+	server := flag.String("s", "irc.example.net:6697", "IRC Server")
+	nick := flag.String("n", "boat", "Nickname")
+	user := flag.String("u", "boat", "Username")
+	channels := flag.String("c", "#example1,#example2", "Comma separated list of channels to join")
+	notUseTls := flag.Bool("xxx", false, "Do not use TLS")
 	flag.Parse()
-	server := "irc.example.net:6697"
-	nick := "goboat"
-	owner := "goboat"
-	channels := []string{"#goboat"}
 
-	runIrc(server, nick, owner, channels)
+	runIrc(*server, *nick, *user, *notUseTls, strings.Split(*channels, ","))
 }
 
-func runIrc(server, nick, owner string, channels []string) {
+func runIrc(server, nick, owner string, notUseTls bool, channels []string) {
 	io := irc.IRC(nick, owner)
-	io.UseTLS = true
+	io.UseTLS = !notUseTls
 	io.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 	io.Debug = true
 	io.VerboseCallbackHandler = true
