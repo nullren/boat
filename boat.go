@@ -33,6 +33,12 @@ func runIrc(server, nick, owner string, notUseTls bool, channels []string) {
 		}
 	})
 
+	io.AddCallback("376", func(e *irc.Event) {
+		for _, c := range channels {
+			io.Join(c)
+		}
+	})
+
 	// hi responder
 	io.AddCallback("PRIVMSG", func(event *irc.Event) {
 		target := event.Arguments[0]
