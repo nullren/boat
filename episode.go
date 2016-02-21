@@ -80,14 +80,18 @@ type EpisodeInfo struct {
 }
 
 func nextEpisode(series string) (string, error) {
-	return episodeInfo(series, func(s LookupShow) string { return s.Links.Nextepisode.Href })
+	// try prev if this fails
+	if r, e := episodeInfo(series, "is", func(s LookupShow) string { return s.Links.Nextepisode.Href }); e == nil {
+		return r, nil
+	}
+	return lastEpisode(series)
 }
 
 func lastEpisode(series string) (string, error) {
-	return episodeInfo(series, func(s LookupShow) string { return s.Links.Previousepisode.Href })
+	return episodeInfo(series, "was", func(s LookupShow) string { return s.Links.Previousepisode.Href })
 }
 
-func episodeInfo(series string, selector func(LookupShow) string) (string, error) {
+func episodeInfo(series, verb string, selector func(LookupShow) string) (string, error) {
 	show, e1 := lookupShow(series)
 	if e1 != nil {
 		return "", fmt.Errorf("No result for user input \"%s\" (%v)", series, e1)
@@ -98,7 +102,7 @@ func episodeInfo(series string, selector func(LookupShow) string) (string, error
 		return "", fmt.Errorf("No result for \"%s\" (%v)", show.Name, e2)
 	}
 
-	return fmt.Sprintf("\"%s\" on %s", show.Name, parseTime(episode.Airstamp)), nil
+	return fmt.Sprintf("\"%s\" %s on %s", show.Name, verb, parseTime(episode.Airstamp)), nil
 }
 
 func parseTime(airstamp string) string {
