@@ -17,13 +17,14 @@ func main() {
 	nick := flag.String("n", "boat", "Nickname")
 	user := flag.String("u", "boat", "Username")
 	channels := flag.String("c", "#example1,#example2", "Comma separated list of channels to join")
+	remindersFile := flag.String("r", "reminders.json", "Path to store reminders")
 	notUseTls := flag.Bool("xxx", false, "Do not use TLS")
 	flag.Parse()
 
-	runIrc(*server, *nick, *user, *notUseTls, strings.Split(*channels, ","))
+	runIrc(*server, *nick, *user, *remindersFile, *notUseTls, strings.Split(*channels, ","))
 }
 
-func runIrc(server, nick, owner string, notUseTls bool, channels []string) {
+func runIrc(server, nick, owner, remindersFile string, notUseTls bool, channels []string) {
 	io := irc.IRC(nick, owner)
 	io.UseTLS = !notUseTls
 	io.TLSConfig = &tls.Config{InsecureSkipVerify: true}
@@ -101,7 +102,10 @@ func runIrc(server, nick, owner string, notUseTls bool, channels []string) {
 	})
 
 	// remind me in...
-	if reminders, erem := InitializeReminders("reminders.json"); erem == nil {
+	reminders, erem := InitializeReminders(remindersFile)
+	if erem != nil {
+		log.Printf("WARNING: Could not initialize reminders: %v\n", erem)
+	} else {
 		go func() {
 			for r := range reminders.Watch() {
 				io.Privmsgf(r.Where, "%s: You asked me to remind you %s", r.Who, r.What)
