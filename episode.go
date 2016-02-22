@@ -128,10 +128,8 @@ func lookupShow(series string) (LookupShow, error) {
 
 func lookupEpisode(url string) (EpisodeInfo, error) {
 	var e EpisodeInfo
-	if err := getJson(url, &e); err != nil {
-		return e, err
-	}
-	return e, nil
+	err := getJson(url, &e)
+	return e, err
 }
 
 func getJson(url string, target interface{}) error {
