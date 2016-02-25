@@ -13,7 +13,8 @@ A simple IRC bot.
         $ boat -s irc.example.net:6697 \
                -n boat \
                -u boatuser \
-               -c \#example
+               -c \#example \
+               -r reminders.json
 
 3. Hack boat:
 
