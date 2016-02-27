@@ -9,24 +9,29 @@ import (
 	"strings"
 	"time"
 
-	"github.com/thoj/go-ircevent"
+	"github.com/nullren/go-ircevent"
 )
 
 func main() {
 	server := flag.String("s", "irc.example.net:6697", "IRC Server")
 	nick := flag.String("n", "boat", "Nickname")
 	user := flag.String("u", "boat", "Username")
+	password := flag.String("p", "boat", "Password")
 	channels := flag.String("c", "#example1,#example2", "Comma separated list of channels to join")
 	remindersFile := flag.String("r", "reminders.json", "Path to store reminders")
-	notUseTls := flag.Bool("xxx", false, "Do not use TLS")
+	useSasl := flag.Bool("sasl", false, "Use SASL")
+	notUseTls := flag.Bool("insecure", false, "Do not use TLS")
 	flag.Parse()
 
-	runIrc(*server, *nick, *user, *remindersFile, *notUseTls, strings.Split(*channels, ","))
+	runIrc(*server, *nick, *user, *password, *remindersFile, *useSasl, *notUseTls, strings.Split(*channels, ","))
 }
 
-func runIrc(server, nick, owner, remindersFile string, notUseTls bool, channels []string) {
-	io := irc.IRC(nick, owner)
+func runIrc(server, nick, user, password, remindersFile string, useSasl, notUseTls bool, channels []string) {
+	io := irc.IRC(nick, user)
 	io.UseTLS = !notUseTls
+	io.UseSasl = useSasl
+	io.SaslPassword = password
+	io.SaslUser = user
 	io.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 	io.Debug = true
 	io.VerboseCallbackHandler = false
