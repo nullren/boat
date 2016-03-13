@@ -4,12 +4,11 @@ import (
 	"crypto/tls"
 	"flag"
 	"log"
-	"regexp"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/nullren/go-ircevent"
+	"github.com/nullren/goatparse"
 )
 
 func main() {
@@ -123,28 +122,17 @@ func runIrc(server, nick, user, password, remindersFile string, useSasl, notUseT
 			if target == nick {
 				target = event.Nick
 			}
-			suffixTranslate := map[string]time.Duration{
-				"s": time.Second,
-				"m": time.Minute,
-				"h": time.Hour,
-				"d": time.Hour * 24,
-				"w": time.Hour * 24 * 7,
-			}
 			cmd := "remind me in "
 			if m := event.Message(); strings.HasPrefix(strings.ToLower(m), cmd) {
-				meat := strings.Fields(m[len(cmd):])
-				t := strings.ToLower(meat[0])
-				r := strings.Join(meat[1:], " ")
-				re := regexp.MustCompile("^[0-9]+[smhdw]$")
-				if re.MatchString(t) {
-					m, _ := strconv.Atoi(t[:len(t)-1])
-					s := suffixTranslate[t[len(t)-1:]]
-					when := time.Now().Add(s * time.Duration(m))
-					reminders.Notify(reminders.Add(event.Nick, r, target, when))
+				pd, err := goatparse.ParseDuration(m[len(cmd):])
+				if err == nil {
+					when := pd.Time
+					what := strings.TrimSpace(m[len(cmd)+pd.Offset:])
+					reminders.Notify(reminders.Add(event.Nick, what, target, when))
 					reminders.Save()
 					io.Privmsgf(target, "%s: Okay, I'll remind you about that on %s", event.Nick, when.Format(time.RFC850))
 				} else {
-					io.Privmsgf(target, "%s: Woops. I only understand times in the form of \\d+[smhdw]", event.Nick)
+					io.Privmsgf(target, "%s: Woops, I didn't understand that", event.Nick)
 				}
 			}
 		})
