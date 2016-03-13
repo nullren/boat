@@ -1,0 +1,100 @@
+timespec = spec_base | (spec_base, inc_or_dec) ;
+
+spec_base = date | time | (time, date) | NOW ;
+NOW = 'now' ;
+
+time = time_base | (time_base, timezone_name) ;
+time_base = hr24clock_hr_min
+    | (time_hour, am_pm)
+    | time_hour_min
+    | (time_hour_min, am_pm)
+    | NOON
+    | MIDNIGHT
+    | TEATIME ;
+
+NOON = 'noon' ;
+MIDNIGHT = 'midnight' ;
+TEATIME = 'teatime' ;
+
+hr24clock_hr_min = INT4DIGIT ;
+time_hour = int1_2digit ;
+time_hour_min = int1_2digit, ':', INT2DIGIT ;
+
+am_pm = AM | PM ;
+AM = 'am' ;
+PM = 'pm' ;
+
+timezone_name = UTC ;
+UTC = 'Z' | 'z' | 'gmt' | 'GMT' ;
+
+date = (month_name, day_number)
+    | (month_name, day_number, year_number)
+    | (month_name, day_number, ',', year_number)
+    | day_of_week
+    | TODAY
+    | TOMORROW
+    | (day_number, month_name)
+    | (day_number, month_name, year_number)
+    | (month_number, '/', day_number, '/', year_number)
+    | (month_number, '-', day_number, '-', year_number)
+    | (month_number, '.', day_number, '.', year_number)
+    | concatenated_date
+    | (NEXT, inc_dec_period)
+    | (NEXT, day_of_week) ;
+
+TODAY = 'today' | 'tdy' ;
+TOMORROW = 'tomorrow' | 'tmrw' ;
+NEXT = 'next' ;
+
+concatenated_date = INT5_8DIGIT ;
+
+month_name = JAN | FEB | MAR | APR | MAY | JUN | JUL | AUG | SEP | OCT | NOV | DEC ;
+JAN = 'january' | 'jan' ;
+FEB = 'february' | 'feb' ;
+MAR = 'march' | 'mar' ;
+APR = 'april' | 'apr' ;
+MAY = 'may' ;
+JUN = 'june' | 'jun' ;
+JUL = 'july' | 'jul' ;
+AUG = 'august' | 'aug' ;
+SEP = 'september' | 'sep' ;
+OCT = 'october' | 'oct' ;
+NOV = 'november' | 'nov' ;
+DEC = 'december' | 'dec' ;
+
+month_number = int1_2digit ;
+day_number = int1_2digit ;
+year_number = int2_or_4digit ;
+
+day_of_week = SUN | MON | TUE | WED | THU | FRI | SAT ;
+SAT = 'saturday' | 'sat' ;
+FRI = 'friday' | 'fri' ;
+THU = 'thursday' | 'thu' ;
+WED = 'wednesday' | 'wed' ;
+TUE = 'tuesday' | 'tue' ;
+MON = 'monday' | 'mon' ;
+SUN = 'sunday' | 'sun' ;
+
+inc_or_dec = increment | decrement ;
+increment = '+', inc_dec_number, inc_dec_period ;
+decrement = "-" , inc_dec_number , inc_dec_period ;
+inc_dec_number = integer ;
+
+inc_dec_period = MINUTE | HOUR | DAY | WEEK | MONTH | YEAR ;
+YEAR = 'y' | 'year' | 'years' ;
+MONTH = 'm' | 'month' | 'months' ;
+WEEK = 'w' | 'week' | 'weeks' ;
+DAY = 'd' | 'day' | 'days' ;
+HOUR = 'h' | 'hr' | 'hour' | 'hours' | 'hrs' ;
+MINUTE = 'm' | 'min' | 'minute' | 'minutes' | 'mins' ;
+
+int1_2digit = INT1DIGIT | INT2DIGIT ;
+int2_or_4digit	= INT2DIGIT | INT4DIGIT ;
+integer = INT | INT1DIGIT | INT2DIGIT | INT4DIGIT | INT5_8DIGIT ;
+
+INT = { INT1DIGIT } ;
+INT5_8DIGIT = INT4DIGIT, (INT1DIGIT | INT2DIGIT | INT3DIGIT | INT4DIGIT) ;
+INT4DIGIT = INT2DIGIT, INT2DIGIT ;
+INT3DIGIT = INT1DIGIT, INT2DIGIT ;
+INT2DIGIT = INT1DIGIT, INT1DIGIT ;
+INT1DIGIT = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
