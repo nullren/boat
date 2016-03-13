@@ -1,100 +1,100 @@
-timespec = spec_base | (spec_base, inc_or_dec) ;
+Parsetime = SpecBase | SpecBase IncOrDec .
 
-spec_base = date | time | (time, date) | NOW ;
-NOW = 'now' ;
+SpecBase = Date | Time | (Time Date) | now .
+now = "now" .
 
-time = time_base | (time_base, timezone_name) ;
-time_base = hr24clock_hr_min
-    | (time_hour, am_pm)
-    | time_hour_min
-    | (time_hour_min, am_pm)
-    | NOON
-    | MIDNIGHT
-    | TEATIME ;
+Time = TimeBase | (TimeBase TimezoneName) .
+TimeBase = Hr24clockHrMin
+    | (TimeHour AmPm)
+    | TimeHourMin
+    | (TimeHourMin AmPm)
+    | noon
+    | midnight
+    | teatime .
 
-NOON = 'noon' ;
-MIDNIGHT = 'midnight' ;
-TEATIME = 'teatime' ;
+noon = "noon" .
+midnight = "midnight" .
+teatime = "teatime" .
 
-hr24clock_hr_min = INT4DIGIT ;
-time_hour = int1_2digit ;
-time_hour_min = int1_2digit, ':', INT2DIGIT ;
+Hr24clockHrMin = Int4digit .
+TimeHour = Int1_2digit .
+TimeHourMin = Int1_2digit ":" Int2digit .
 
-am_pm = AM | PM ;
-AM = 'am' ;
-PM = 'pm' ;
+AmPm = am | pm .
+am = "am" .
+pm = "pm" .
 
-timezone_name = UTC ;
-UTC = 'Z' | 'z' | 'gmt' | 'GMT' ;
+TimezoneName = utc .
+utc = "Z" | "z" | "gmt" | "GMT" .
 
-date = (month_name, day_number)
-    | (month_name, day_number, year_number)
-    | (month_name, day_number, ',', year_number)
-    | day_of_week
-    | TODAY
-    | TOMORROW
-    | (day_number, month_name)
-    | (day_number, month_name, year_number)
-    | (month_number, '/', day_number, '/', year_number)
-    | (month_number, '-', day_number, '-', year_number)
-    | (month_number, '.', day_number, '.', year_number)
-    | concatenated_date
-    | (NEXT, inc_dec_period)
-    | (NEXT, day_of_week) ;
+Date = (MonthName DayNumber)
+    | (MonthName DayNumber YearNumber)
+    | (MonthName DayNumber "," YearNumber)
+    | DayOfWeek
+    | today
+    | tomorrow
+    | (DayNumber MonthName)
+    | (DayNumber MonthName YearNumber)
+    | (MonthNumber "/" DayNumber "/" YearNumber)
+    | (MonthNumber "-" DayNumber "-" YearNumber)
+    | (MonthNumber "." DayNumber "." YearNumber)
+    | ConcatenatedDate
+    | (next IncDecPeriod)
+    | (next DayOfWeek) .
 
-TODAY = 'today' | 'tdy' ;
-TOMORROW = 'tomorrow' | 'tmrw' ;
-NEXT = 'next' ;
+today = "today" | "tdy" .
+tomorrow = "tomorrow" | "tmrw" .
+next = "next" .
 
-concatenated_date = INT5_8DIGIT ;
+ConcatenatedDate = Int5_8digit .
 
-month_name = JAN | FEB | MAR | APR | MAY | JUN | JUL | AUG | SEP | OCT | NOV | DEC ;
-JAN = 'january' | 'jan' ;
-FEB = 'february' | 'feb' ;
-MAR = 'march' | 'mar' ;
-APR = 'april' | 'apr' ;
-MAY = 'may' ;
-JUN = 'june' | 'jun' ;
-JUL = 'july' | 'jul' ;
-AUG = 'august' | 'aug' ;
-SEP = 'september' | 'sep' ;
-OCT = 'october' | 'oct' ;
-NOV = 'november' | 'nov' ;
-DEC = 'december' | 'dec' ;
+MonthName = jan | feb | mar | apr | may | jun | jul | aug | sep | oct | nov | dec .
+jan = "january" | "jan" .
+feb = "february" | "feb" .
+mar = "march" | "mar" .
+apr = "april" | "apr" .
+may = "may" .
+jun = "june" | "jun" .
+jul = "july" | "jul" .
+aug = "august" | "aug" .
+sep = "september" | "sep" .
+oct = "october" | "oct" .
+nov = "november" | "nov" .
+dec = "december" | "dec" .
 
-month_number = int1_2digit ;
-day_number = int1_2digit ;
-year_number = int2_or_4digit ;
+MonthNumber = Int1_2digit .
+DayNumber = Int1_2digit .
+YearNumber = Int2_or_4digit .
 
-day_of_week = SUN | MON | TUE | WED | THU | FRI | SAT ;
-SAT = 'saturday' | 'sat' ;
-FRI = 'friday' | 'fri' ;
-THU = 'thursday' | 'thu' ;
-WED = 'wednesday' | 'wed' ;
-TUE = 'tuesday' | 'tue' ;
-MON = 'monday' | 'mon' ;
-SUN = 'sunday' | 'sun' ;
+DayOfWeek = sun | mon | tue | wed | thu | fri | sat .
+sat = "saturday" | "sat" .
+fri = "friday" | "fri" .
+thu = "thursday" | "thu" .
+wed = "wednesday" | "wed" .
+tue = "tuesday" | "tue" .
+mon = "monday" | "mon" .
+sun = "sunday" | "sun" .
 
-inc_or_dec = increment | decrement ;
-increment = '+', inc_dec_number, inc_dec_period ;
-decrement = "-" , inc_dec_number , inc_dec_period ;
-inc_dec_number = integer ;
+IncOrDec = Increment | Decrement .
+Increment = "+" IncDecNumber IncDecPeriod .
+Decrement = "-"  IncDecNumber  IncDecPeriod .
+IncDecNumber = Integer .
 
-inc_dec_period = MINUTE | HOUR | DAY | WEEK | MONTH | YEAR ;
-YEAR = 'y' | 'year' | 'years' ;
-MONTH = 'm' | 'month' | 'months' ;
-WEEK = 'w' | 'week' | 'weeks' ;
-DAY = 'd' | 'day' | 'days' ;
-HOUR = 'h' | 'hr' | 'hour' | 'hours' | 'hrs' ;
-MINUTE = 'm' | 'min' | 'minute' | 'minutes' | 'mins' ;
+IncDecPeriod = minute | hour | day | week | month | year .
+year = "y" | "year" | "years" .
+month = "m" | "month" | "months" .
+week = "w" | "week" | "weeks" .
+day = "d" | "day" | "days" .
+hour = "h" | "hr" | "hour" | "hours" | "hrs" .
+minute = "m" | "min" | "minute" | "minutes" | "mins" .
 
-int1_2digit = INT1DIGIT | INT2DIGIT ;
-int2_or_4digit	= INT2DIGIT | INT4DIGIT ;
-integer = INT | INT1DIGIT | INT2DIGIT | INT4DIGIT | INT5_8DIGIT ;
+Int1_2digit = int1digit | Int2digit .
+Int2_or_4digit	= Int2digit | Int4digit .
+Integer = Int | int1digit | Int2digit | Int4digit | Int5_8digit .
 
-INT = { INT1DIGIT } ;
-INT5_8DIGIT = INT4DIGIT, (INT1DIGIT | INT2DIGIT | INT3DIGIT | INT4DIGIT) ;
-INT4DIGIT = INT2DIGIT, INT2DIGIT ;
-INT3DIGIT = INT1DIGIT, INT2DIGIT ;
-INT2DIGIT = INT1DIGIT, INT1DIGIT ;
-INT1DIGIT = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+Int = { int1digit } .
+Int5_8digit = Int4digit (int1digit | Int2digit | Int3digit | Int4digit) .
+Int4digit = Int2digit Int2digit .
+Int3digit = int1digit Int2digit .
+Int2digit = int1digit int1digit .
+int1digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" .
